@@ -1,0 +1,780 @@
+drop table rezervari;
+drop table pachete;
+drop table angajati;
+drop table clienti;
+drop table hoteluri;
+drop table antrenori;
+drop table jobs;
+drop table stapani;
+drop table tari;
+
+create table stapani (
+    id_stapan number primary key,
+    nume varchar2(50) not null,
+    prenume varchar2(50) not null,
+    numar_telefon varchar2(11) not null unique check(length(numar_telefon) = 11),
+    email varchar2(30) not null unique check(regexp_like(email, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'))
+);
+
+create table clienti (
+    id_client number primary key,
+    nume varchar2(50) not null,
+    specie varchar2(50) not null,
+    id_stapan number not null,
+    foreign key (id_stapan)
+        references stapani(id_stapan)
+        on delete cascade
+);
+
+create table tari (
+    id_tara number primary key,
+    nume_tara varchar2(20) not null
+);
+
+create table hoteluri (
+    id_hotel number primary key,
+    nume varchar2(20) not null,
+    id_tara number not null,
+    pret_per_noapte number(4) not null check (pret_per_noapte > 0),
+    foreign key (id_tara)
+        references tari(id_tara)
+        on delete cascade
+);
+
+create table antrenori (
+    id_antrenor number primary key,
+    nume varchar2(20) not null,
+    pret_per_ora number(8,2) not null check (pret_per_ora > 0)
+);
+
+create table pachete (
+    id_pachet number primary key,
+    denumire varchar2(20) not null,
+    id_antrenor number not null,
+    foreign key (id_antrenor)
+        references antrenori(id_antrenor)
+        on delete cascade
+);
+
+create table rezervari (
+    id_rezervare number primary key,
+    id_client number not null,
+    id_hotel number not null,
+    id_pachet number not null,
+    data_venire date not null,
+    data_plecare date not null,
+    foreign key (id_client)
+        references clienti(id_client)
+        on delete cascade,
+    foreign key (id_hotel)
+        references hoteluri(id_hotel)
+        on delete cascade,
+    foreign key (id_pachet)
+        references pachete(id_pachet)
+        on delete cascade,
+    check (data_plecare > data_venire)
+);
+
+create table jobs (
+    id_job number primary key,
+    titlu varchar2(20) not null,
+    salariu number(8,2) not null check (salariu > 0)
+);
+
+create table angajati (
+    id_angajat number primary key,
+    nume varchar2(50) not null,
+    prenume varchar2(50) not null,
+    id_hotel number not null,
+    id_job number not null,
+    foreign key (id_hotel)
+        references hoteluri(id_hotel)
+        on delete cascade,
+    foreign key (id_job)
+        references jobs(id_job)
+        on delete cascade
+);
+
+drop sequence stapani_seq;
+create sequence stapani_seq start with 1 increment by 1;
+insert into stapani (id_stapan, nume, prenume, numar_telefon, email) values (stapani_seq.nextval, 'popescu', 'ion', '40712345678', 'ion.popescu@example.com');
+insert into stapani (id_stapan, nume, prenume, numar_telefon, email) values (stapani_seq.nextval, 'ionescu', 'maria', '40723456789', 'maria.ionescu@example.com');
+insert into stapani (id_stapan, nume, prenume, numar_telefon, email) values (stapani_seq.nextval, 'georgescu', 'dan', '40734567890', 'dan.georgescu@example.com');
+insert into stapani (id_stapan, nume, prenume, numar_telefon, email) values (stapani_seq.nextval, 'vasilescu', 'ana', '40745678901', 'ana.vasilescu@example.com');
+insert into stapani (id_stapan, nume, prenume, numar_telefon, email) values (stapani_seq.nextval, 'marinescu', 'alex', '40756789012', 'alex.marinescu@example.com');
+
+drop sequence tari_seq;
+create sequence tari_seq start with 1 increment by 1;
+insert into tari (id_tara, nume_tara) values (tari_seq.nextval, 'romania');
+insert into tari (id_tara, nume_tara) values (tari_seq.nextval, 'italia');
+insert into tari (id_tara, nume_tara) values (tari_seq.nextval, 'franta');
+insert into tari (id_tara, nume_tara) values (tari_seq.nextval, 'germania');
+insert into tari (id_tara, nume_tara) values (tari_seq.nextval, 'spania');
+
+drop sequence hotel_seq;
+create sequence hotel_seq start with 1 increment by 1;
+insert into hoteluri (id_hotel, nume, id_tara, pret_per_noapte) values (hotel_seq.nextval, 'hotel central', 1, 200);
+insert into hoteluri (id_hotel, nume, id_tara, pret_per_noapte) values (hotel_seq.nextval, 'hotel paradise', 2, 350);
+insert into hoteluri (id_hotel, nume, id_tara, pret_per_noapte) values (hotel_seq.nextval, 'hotel ocean', 3, 150);
+insert into hoteluri (id_hotel, nume, id_tara, pret_per_noapte) values (hotel_seq.nextval, 'hotel montana', 4, 180);
+insert into hoteluri (id_hotel, nume, id_tara, pret_per_noapte) values (hotel_seq.nextval, 'hotel city', 5, 220);
+
+drop sequence antrenori_seq;
+create sequence antrenori_seq start with 1 increment by 1;
+insert into antrenori (id_antrenor, nume, pret_per_ora) values (antrenori_seq.nextval, 'andrei', 50);
+insert into antrenori (id_antrenor, nume, pret_per_ora) values (antrenori_seq.nextval, 'maria', 60);
+insert into antrenori (id_antrenor, nume, pret_per_ora) values (antrenori_seq.nextval, 'dan', 55);
+insert into antrenori (id_antrenor, nume, pret_per_ora) values (antrenori_seq.nextval, 'ana', 65);
+insert into antrenori (id_antrenor, nume, pret_per_ora) values (antrenori_seq.nextval, 'alex', 70);
+
+drop sequence jobs_seq;
+create sequence jobs_seq start with 1 increment by 1;
+insert into jobs (id_job, titlu, salariu) values (jobs_seq.nextval, 'receptionist', 3000);
+insert into jobs (id_job, titlu, salariu) values (jobs_seq.nextval, 'chef', 4000);
+insert into jobs (id_job, titlu, salariu) values (jobs_seq.nextval, 'cleaner', 2000);
+insert into jobs (id_job, titlu, salariu) values (jobs_seq.nextval, 'manager', 5000);
+insert into jobs (id_job, titlu, salariu) values (jobs_seq.nextval, 'trainer', 3500);
+
+drop sequence client_seq;
+create sequence client_seq start with 1 increment by 1;
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'bella', 'caine', 1);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'luna', 'pisica', 2);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'rex', 'caine', 3);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'milo', 'pisica', 4);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'rocky', 'caine', 5);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'toby', 'caine', 1);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'simba', 'pisica', 2);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'max', 'caine', 3);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'nala', 'pisica', 4);
+insert into clienti (id_client, nume, specie, id_stapan) values (client_seq.nextval, 'bruno', 'caine', 5);
+
+drop sequence pachete_seq;
+create sequence pachete_seq start with 1 increment by 1;
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'basic', 1);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'premium', 2);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'standard', 3);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'deluxe', 4);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'vip', 5);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'basic2', 1);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'premium2', 2);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'standard2', 3);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'deluxe2', 4);
+insert into pachete (id_pachet, denumire, id_antrenor) values (pachete_seq.nextval, 'vip2', 5);
+
+drop sequence rez_seq;
+create sequence rez_seq start with 1 increment by 1;
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 1, 1, 1, to_date('2025-12-20','yyyy-mm-dd'), to_date('2025-12-25','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 2, 2, 2, to_date('2025-12-21','yyyy-mm-dd'), to_date('2026-12-26','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 3, 3, 3, to_date('2025-12-22','yyyy-mm-dd'), to_date('2025-12-27','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 4, 4, 4, to_date('2025-12-23','yyyy-mm-dd'), to_date('2025-12-28','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 5, 5, 5, to_date('2025-12-24','yyyy-mm-dd'), to_date('2025-12-29','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 6, 1, 6, to_date('2025-12-20','yyyy-mm-dd'), to_date('2025-12-22','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 7, 1, 7, to_date('2025-12-21','yyyy-mm-dd'), to_date('2025-12-23','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 8, 3, 8, to_date('2025-12-22','yyyy-mm-dd'), to_date('2025-12-24','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 9, 4, 9, to_date('2025-12-23','yyyy-mm-dd'), to_date('2025-12-25','yyyy-mm-dd'));
+insert into rezervari (id_rezervare, id_client, id_hotel, id_pachet, data_venire, data_plecare) values (rez_seq.nextval, 10, 5, 10, to_date('2025-12-24','yyyy-mm-dd'), to_date('2025-12-26','yyyy-mm-dd'));
+
+drop sequence angajati_seq;
+create sequence angajati_seq start with 1 increment by 1;
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'ionescu', 'dan', 1, 1);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'popa', 'ana', 2, 2);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'marin', 'ion', 3, 3);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'dobre', 'maria', 4, 4);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'stan', 'alex', 5, 5);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'tudor', 'andrei', 1, 5);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'cristian', 'elena', 2, 4);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'mihai', 'livia', 3, 3);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'alina', 'paul', 4, 3);
+insert into angajati (id_angajat, nume, prenume, id_hotel, id_job) values (angajati_seq.nextval, 'rares', 'daniel', 5, 1);
+
+commit;
+
+-- 6
+-- Fie o funcționalitate a aplicației care permite afișarea informațiilor
+-- legate de un anumit hotel într-o anumită zi: angajații, pachetele activate și clienții.
+create or replace procedure ex6(v_idhotel number, v_date date)
+    is
+    type vector is varray(100) of varchar2(100);
+    v_angajati vector := vector();
+
+    type t_imbricat is table of pachete.denumire%type;
+    v_pachete t_imbricat := t_imbricat();
+
+    type t_index is table of varchar2(100) index by pls_integer;
+    v_animale t_index;
+    a number;
+
+    v_numehotel hoteluri.nume%type;
+
+begin
+    select nume
+    into v_numehotel
+    from hoteluri
+    where id_hotel = v_idhotel;
+
+    select nume || ' ' || prenume
+    bulk collect into v_angajati
+    from angajati
+    where id_hotel = v_idhotel;
+
+    select p.denumire
+    bulk collect into v_pachete
+    from rezervari r
+    join pachete p on r.id_pachet = p.id_pachet
+    where v_date between r.data_venire and r.data_plecare and id_hotel = v_idhotel;
+
+    select a.nume || ' (' || a.specie || ')'
+    bulk collect into v_animale
+    from rezervari r
+    join clienti a on r.id_client = a.id_client
+    where v_date between r.data_venire and r.data_plecare and r.id_hotel = v_idhotel;
+
+    dbms_output.put_line('La ' || v_numehotel || ' lucreaza: ');
+
+   for i in 1..v_angajati.count loop
+        dbms_output.put_line(v_angajati(i));
+        end loop;
+
+    dbms_output.put_line('Pentru ziua ' || trunc(v_date) || ' au fost cumparate pachetele: ');
+    for i in 1..v_pachete.count loop
+        if i <> v_pachete.count then dbms_output.put(v_pachete(i) || ', ');
+        else dbms_output.put_line(v_pachete(i));
+        end if;
+    end loop;
+
+    dbms_output.put_line('Animalutele cazate sunt: ');
+    a := v_animale.first;
+    while a is not null loop
+        dbms_output.put_line(v_animale(a));
+        a := v_animale.next(a);
+        end loop;
+
+end ex6;
+/
+
+--Verificare
+declare
+    v_data date := &zi;
+    v_hotel hoteluri.id_hotel%type := &hotel;
+begin
+    ex6(v_hotel, v_data);
+end;
+
+
+-- 7
+-- Pentru toți stăpânii să se afișeze lista de animăluțe care au fost
+-- cazate la un hotel, împreună cu denumirea hotelului în care au stat
+-- și denumirea pachetului rezervat.
+
+create or replace procedure ex7 is
+    type t_animal is record (
+        id_client clienti.id_client%type,
+        nume_animal clienti.nume%type,
+        specie clienti.specie%type,
+        id_stapan stapani.id_stapan%type
+    );
+
+    type t_animale_tab is table of t_animal;
+    v_animale t_animale_tab;
+
+    cursor c_animale is
+        select c.id_client, c.nume, c.specie, c.id_stapan
+        from clienti c
+        left join stapani s on c.id_stapan = s.id_stapan
+        order by c.id_stapan, c.id_client;
+
+    cursor c_rezervari(p_id_client number) is
+        select r.id_hotel, h.nume as nume_hotel, r.id_pachet, p.denumire as denumire_pachet
+        from rezervari r
+        join hoteluri h on r.id_hotel = h.id_hotel
+        join pachete p on r.id_pachet = p.id_pachet
+        where r.id_client = p_id_client;
+
+    v_id_hotel hoteluri.id_hotel%type;
+    v_nume_hotel hoteluri.nume%type;
+    v_id_pachet pachete.id_pachet%type;
+    v_denumire_pachet pachete.denumire%type;
+    v_nume_stapan stapani.nume%type;
+    v_nume_iar stapani.nume%type := 'buffer';
+    exceptie exception;
+
+begin
+    open c_animale;
+    fetch c_animale bulk collect into v_animale;
+    close c_animale;
+
+    if v_animale.count = 0 then raise exceptie;
+    end if;
+
+    for i in 1 .. v_animale.count loop
+        select nume || ' ' || prenume
+        into v_nume_stapan
+        from stapani
+        where id_stapan = v_animale(i).id_stapan;
+
+    if v_nume_stapan <> v_nume_iar then
+        dbms_output.put_line(v_nume_stapan);
+    end if;
+    dbms_output.put_line('  - animal: ' || v_animale(i).nume_animal ||
+    ' (' || v_animale(i).specie || ')');
+
+        v_nume_iar := v_nume_stapan;
+
+        open c_rezervari(v_animale(i).id_client);
+        loop
+            fetch c_rezervari into v_id_hotel, v_nume_hotel, v_id_pachet, v_denumire_pachet;
+            exit when c_rezervari%notfound;
+
+            dbms_output.put_line('  rezervare la ' || v_nume_hotel ||
+                                 ', cu pachetul ' || v_denumire_pachet);
+        end loop;
+        close c_rezervari;
+
+    end loop;
+
+exception
+    when exceptie then
+        dbms_output.put_line('Nu exista clienti in baza de date');
+end ex7;
+/
+
+-- Verificare
+
+begin
+   ex7();
+end;
+
+-- 8
+-- Fie o funcționalitate a aplicației care permite unui stăpân (care se identifică prin email)
+-- să prelungească șederea animalului său care stă la un anumit hotel cu un număr de zile.
+
+create or replace function ex8(v_email varchar2, v_hotelname varchar2, v_nr_zile number)
+    return varchar2 is
+    v_client clienti.id_client%type;
+    v_retur rezervari.data_plecare%type;
+    v_hotel hoteluri.id_hotel%type;
+begin
+    select id_hotel
+    into v_hotel
+    from hoteluri
+    where nume = v_hotelname;
+
+    select c.id_client
+    into v_client
+    from clienti c
+    join stapani s on s.id_stapan = c.id_stapan
+    join rezervari r on r.id_client = c.id_client
+    where s.email = v_email and r.data_venire <= trunc(sysdate) and r.data_plecare >= trunc(sysdate) and r.id_hotel = v_hotel;
+
+    update rezervari
+    set data_plecare = data_plecare + v_nr_zile
+    where id_client = v_client and data_plecare >= trunc(sysdate) and data_venire <= trunc(sysdate);
+
+    select data_plecare
+    into v_retur
+    from rezervari
+    where id_client = v_client and data_plecare >= trunc(sysdate);
+
+    return to_char(v_retur, 'mm-dd-yyyy');
+
+exception
+    when no_data_found then
+        return 'Nu exista animale cazate in prezent la acest hotel.';
+    when too_many_rows then
+        return 'Exista mai multe animale cazate de acest stapan.';
+end ex8;
+/
+
+-- Verificare
+declare
+    v_hotel hoteluri.nume%type := &hotel;
+    v_email stapani.email%type := &email;
+    v_prelungire number := &prelungire;
+    v_mesaj varchar2(100);
+begin
+    v_mesaj := ex8(v_email, v_hotel, v_prelungire);
+    dbms_output.put_line(v_mesaj);
+end;
+
+-- 9
+-- Pentru un anumit hotel și stăpân, se dorește afișarea informațiilor legate de rezervările
+-- acestuia (numele clientului, numele hotelului, pachetele și detalii despre antrenor).
+create or replace procedure ex9(v_stapan number, v_hotel number) is
+    cursor c is
+        select
+            c.nume as nume_animal,
+            h.nume as nume_hotel,
+            max(p.denumire) as pachet,
+            max(a.nume) as nume_antrenor,
+            max(a.pret_per_ora) as pret_antrenor
+        from rezervari r
+        join clienti c on c.id_client = r.id_client
+        join pachete p on p.id_pachet = r.id_pachet
+        join antrenori a on a.id_antrenor = p.id_antrenor
+        join hoteluri h on h.id_hotel = r.id_hotel
+        where r.id_hotel = v_hotel
+          and c.id_stapan = v_stapan
+        group by c.id_client, c.nume, h.nume;
+
+    stapan_inexistent exception;
+    hotel_inexistent exception;
+    fara_rezervari exception;
+    v_numec clienti.nume%type;
+    v_numeh hoteluri.nume%type;
+    v_denumire pachete.denumire%type;
+    v_numea antrenori.nume%type;
+    v_pret antrenori.pret_per_ora%type;
+    v_dummy number := 0;
+begin
+
+    begin
+        select 1 into v_dummy from stapani where id_stapan = v_stapan;
+    exception
+        when no_data_found then raise stapan_inexistent;
+    end;
+
+    begin
+        select 1 into v_dummy from hoteluri where id_hotel = v_hotel;
+    exception
+        when no_data_found then raise hotel_inexistent;
+    end;
+
+    open c;
+    fetch c into v_numec, v_numeh, v_denumire, v_numea, v_pret;
+    if c%notfound then
+        raise fara_rezervari;
+    end if;
+
+    loop
+        dbms_output.put_line(v_numeh || ' cazeaza animalutul ' || v_numec || ', avand pachetul ' || v_denumire || ', tinut de ' || v_numea || ' cu pretul de ' || v_pret || ' lei pe ora.');
+        fetch c into v_numec, v_numeh, v_denumire, v_numea, v_pret;
+        exit when c%notfound;
+    end loop;
+close c;
+
+exception
+    when stapan_inexistent then dbms_output.put_line('Id-ul stapanului este invalid');
+    when hotel_inexistent then dbms_output.put_line('Id-ul hotelului este invalid');
+    when fara_rezervari then dbms_output.put_line('Nu exista rezervari.');
+end ex9;
+/
+
+-- Verificare
+declare
+    v_stapan stapani.id_stapan%type := &id_stapan;
+    v_hotel hoteluri.id_hotel%type := &id_hotel;
+begin
+    ex9(v_stapan, v_hotel);
+end;
+
+-- 10
+-- Fie presupunerea că hotelul cu id = 1 este foarte mic și exclusivist, având doar trei
+-- camere. Atunci, încercarea de a face o nouă rezervare când acest hotel este plin
+-- va genera o eroare.
+create or replace trigger ex10
+    after insert on rezervari
+declare
+begin
+    for r in
+        (
+            select count(*) as rezervari
+            from hoteluri h
+            join rezervari r on r.id_hotel = h.id_hotel
+            where r.data_venire <= trunc(sysdate) and r.data_plecare >= trunc(sysdate) and h.id_hotel = 1
+            group by r.id_hotel
+        ) loop
+            if r.rezervari > 3 then raise_application_error(-20002, 'Nu mai sunt camere libere');
+            end if;
+        end loop;
+end ex10;
+/
+
+-- Declansare
+begin
+    insert into clienti values (11, 'Fluffy', 'iepure', 2);
+    insert into clienti values (12, 'Puffy', 'iepure', 1);
+    insert into clienti values (13, 'Muffin', 'iepure', 3);
+    insert into clienti values (14, 'Donut', 'iepure', 5);
+    insert into rezervari values (11, 4, 1, 1, sysdate - 1, sysdate + 4);
+    insert into rezervari values (12, 4, 1, 2, sysdate - 1, sysdate + 3);
+    insert into rezervari values (13, 4, 1, 3, sysdate - 1, sysdate + 3);
+    insert into rezervari values (14, 4, 1, 4, sysdate - 1, sysdate + 3);
+end;
+
+-- 11
+-- Pentru cazarea animăluțelor, există o limită: la un hotel, un stăpân poate caza
+-- maxim două animăluțe în aceeași perioadă de timp.
+create or replace trigger ex11
+for insert on rezervari
+compound trigger
+    v_animale number(1);
+    nr_maxim exception;
+before each row is
+begin
+    select count(r.id_client)
+        into v_animale
+    from rezervari r
+    join clienti c on c.id_client = r.id_client
+    join stapani s on s.id_stapan = c.id_stapan
+    where r.id_hotel = :new.id_hotel and r.data_plecare >= trunc(sysdate)
+            and c.id_stapan = (
+                            select id_stapan
+                            from clienti
+                            where id_client = :new.id_client
+                             );
+
+    if v_animale >= 2 then raise nr_maxim;
+    end if;
+
+exception
+    when nr_maxim then
+        raise_application_error(-20001, 'Nu mai poti caza alt animal');
+end before each row;
+end ex11;
+/
+
+-- Declansare
+begin
+    insert into clienti values (11, 'Fluffy', 'iepure', 4);
+    insert into clienti values (12, 'Puffy', 'iepure', 4);
+    insert into clienti values (13, 'Luffy', 'iepure', 4);
+    insert into rezervari values (11, 4, 1, 1, sysdate, sysdate + 4);
+    insert into rezervari values (12, 4, 1, 1, sysdate - 1, sysdate + 2);
+    insert into rezervari values (13, 4, 1, 1, sysdate - 1, sysdate + 2);
+end;
+
+-- 12
+-- Permite doar adminului (user-ul ‘sys’) sa altereze schema bazei de date.
+
+create or replace trigger ex12
+    before drop or alter or create on schema
+begin
+     if upper(user) <> upper('system') then raise_application_error(-20003, 'Nu ai drepturi de alterare a schemei');
+    end if; -- am schimbat din sys in system pentru ca, in cazul in care rulez din greseala codul,
+            -- sa nu ma blocheze (eu sunt logata ca system)
+end;
+
+create table test(
+    id_test number primary key
+);
+
+-- 13
+-- Pachet pentru rezervari automate
+create or replace package ex13 is
+    type t_detalii_rezervare is record
+        (
+            email_stapan stapani.email%type,
+            nume_client clienti.nume%type,
+            specie clienti.specie%type,
+            nume_hotel hoteluri.nume%type,
+            data_v rezervari.data_venire%type,
+            data_p rezervari.data_plecare%type,
+            pachet pachete.denumire%type
+        );
+
+    type t_bon is table of varchar2(200);
+
+    function cost_final(v_detalii_rezervare t_detalii_rezervare) return number;
+    function discount(v_detalii_rezervare t_detalii_rezervare) return number;
+    procedure existenta_stapan(v_detalii_stapan stapani%rowtype);
+    procedure existenta_client(v_nume clienti.nume%type, v_specie clienti.specie%type, v_detalii_stapan stapani%rowtype);
+    procedure rezervare(v_detalii_rezervare t_detalii_rezervare, v_detalii_stapan stapani%rowtype);
+end;
+
+create or replace package body ex13 is
+    function discount(v_detalii_rezervare t_detalii_rezervare) return number
+        is
+        v_discount number(2);
+        v_rezervari number;
+    begin
+        select count(r.id_rezervare)
+        into v_rezervari
+        from rezervari r
+        join clienti c on c.id_client = r.id_client
+        join stapani s on s.id_stapan = c.id_stapan
+        join hoteluri h on h.id_hotel = r.id_hotel
+        join pachete p on p.id_pachet = r.id_pachet
+        where h.nume = v_detalii_rezervare.nume_hotel and s.email = v_detalii_rezervare.email_stapan
+                and p.denumire <> v_detalii_rezervare.pachet;
+
+        if v_rezervari > 5 then v_discount := 20;
+            else if v_rezervari between 2 and 5 then v_discount := 10;
+                else if v_rezervari = 1 then v_discount := 5;
+                    else v_discount := 0;
+                end if;
+            end if;
+        end if;
+
+        return v_discount;
+
+    end;
+
+    function cost_final(v_detalii_rezervare t_detalii_rezervare) return number
+        is
+        suma number(8,2) := 0;
+        v_pret_antrenor antrenori.pret_per_ora%type;
+        v_pret_hotel hoteluri.pret_per_noapte%type;
+        v_durata number;
+        v_discount number(8,2);
+    begin
+        begin
+            v_durata := v_detalii_rezervare.data_p - v_detalii_rezervare.data_v;
+            select pret_per_noapte
+            into v_pret_hotel
+            from hoteluri
+            where nume = v_detalii_rezervare.nume_hotel;
+        exception
+            when no_data_found then
+                raise_application_error(-20001, 'Nu exista hotelul selectat.');
+        end;
+
+        begin
+            select a.pret_per_ora
+            into v_pret_antrenor
+            from antrenori a
+            join pachete p on p.id_antrenor = a.id_antrenor
+            where p.denumire = v_detalii_rezervare.pachet;
+        exception
+            when no_data_found then
+                raise_application_error(-20001, 'Pachetul rezervat nu exista.');
+        end;
+
+        v_discount := discount(v_detalii_rezervare)/100;
+        suma := v_durata * v_pret_hotel + v_durata * v_pret_antrenor;
+        suma := suma - v_discount * suma;
+
+        return suma;
+    end;
+
+    procedure existenta_stapan(v_detalii_stapan stapani%rowtype)
+    is
+        v_dummy number;
+    begin
+        select 1
+        into v_dummy
+        from stapani
+        where email = v_detalii_stapan.email;
+    exception
+        when no_data_found then
+            insert into stapani values(stapani_seq.nextval, v_detalii_stapan.nume,
+                                       v_detalii_stapan.prenume, v_detalii_stapan.NUMAR_TELEFON,
+                                       v_detalii_stapan.email);
+    end;
+
+    procedure existenta_client(v_nume clienti.nume%type, v_specie clienti.specie%type, v_detalii_stapan stapani%rowtype)
+        is
+        v_dummy number;
+        v_stapan number;
+    begin
+        select id_stapan
+        into v_stapan
+        from stapani
+        where email = v_detalii_stapan.email;
+
+        select 1
+        into v_dummy
+        from clienti c
+        join stapani s on s.id_stapan = v_stapan
+        where s.email = v_detalii_stapan.email and c.nume = v_nume and c.specie = v_specie;
+
+    exception
+        when no_data_found then
+            insert into clienti values(client_seq.nextval, v_nume, v_specie, v_stapan);
+
+    end;
+
+    procedure rezervare(v_detalii_rezervare t_detalii_rezervare, v_detalii_stapan stapani%rowtype)
+        is
+        v_factura t_bon := t_bon();
+        v_stapan number;
+        v_cost number(8,2);
+        v_client number;
+        v_hotel number;
+        v_pachet number;
+    begin
+        existenta_stapan(v_detalii_stapan);
+
+        select id_stapan
+        into v_stapan
+        from stapani
+        where email = v_detalii_stapan.email;
+
+        v_factura.extend;
+        v_factura(v_factura.last) := 'Rezervare facuta de stapanul cu id-ul ' || v_stapan;
+
+        existenta_client(v_detalii_rezervare.nume_client, v_detalii_rezervare.specie, v_detalii_stapan);
+
+        select id_client
+        into v_client
+        from clienti c
+        join stapani s on s.id_stapan = v_stapan
+        where s.email = v_detalii_stapan.email
+          and c.nume = v_detalii_rezervare.nume_client and c.specie = v_detalii_rezervare.specie;
+
+        v_factura.extend;
+        v_factura(v_factura.last) := 'Rezervare facuta pentru clientul ' || v_detalii_rezervare.nume_client || ' ('
+                || v_detalii_rezervare.specie || ') ';
+
+        begin
+            select id_hotel
+            into v_hotel
+            from hoteluri
+            where nume = v_detalii_rezervare.nume_hotel;
+        exception
+            when no_data_found then
+                raise_application_error(-20001, 'Nu exista hotelul selectat');
+        end;
+
+        begin
+            select id_pachet
+            into v_pachet
+            from pachete
+            where denumire = v_detalii_rezervare.pachet;
+        exception
+            when no_data_found then
+                    raise_application_error(-20001, 'Pachetul rezervat nu exista.');
+        end;
+
+        insert into rezervari values(rez_seq.nextval, v_client,
+                    v_hotel, v_pachet, v_detalii_rezervare.data_v,
+                    v_detalii_rezervare.data_p);
+
+        v_cost := cost_final(v_detalii_rezervare);
+        v_factura.extend;
+        v_factura(v_factura.last) := 'Costul pentru o rezervare la ' || v_detalii_rezervare.nume_hotel
+                        || ' in perioada ' || v_detalii_rezervare.data_v
+                        || ' - ' || v_detalii_rezervare.data_p || ' este ' || v_cost || ' RON';
+
+        v_factura.extend;
+        v_factura(v_factura.last) := 'Servicii extra: pachetul ' || v_detalii_rezervare.pachet;
+
+        dbms_output.put_line('Rezervare confirmata!');
+
+        for i in v_factura.first..v_factura.last loop
+        dbms_output.put_line(v_factura(i));
+        end loop;
+    end;
+end;
+
+-- Verificare
+declare
+    v_detalii_rezervare ex13.t_detalii_rezervare;
+    v_detalii_stapan stapani%rowtype;
+begin
+    v_detalii_rezervare.email_stapan := 'monica@example.com';
+    v_detalii_rezervare.nume_client := 'gina';
+    v_detalii_rezervare.specie := 'papagal';
+    v_detalii_rezervare.nume_hotel := 'hotel ocean';
+    v_detalii_rezervare.pachet := 'deluxe2';
+    v_detalii_rezervare.data_v := sysdate;
+    v_detalii_rezervare.data_p := sysdate + 1;
+
+    v_detalii_stapan.nume := 'petrescu';
+    v_detalii_stapan.prenume := 'monica';
+    v_detalii_stapan.email := 'monica@example.com';
+    v_detalii_stapan.numar_telefon := '40774675422';
+
+    ex13.rezervare(v_detalii_rezervare, v_detalii_stapan);
+
+end;
+rollback;
